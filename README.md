@@ -1,2 +1,2 @@
-# rust_template
-This is a template repository for Mech_1 class in RU
+# T-869-COMP
+This is a repository for assignments for T-869 comp
