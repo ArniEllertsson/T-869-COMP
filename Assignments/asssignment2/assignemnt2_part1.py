@@ -77,8 +77,8 @@ def ransac(points,iter,n_samples,threshold,inline_ratio):
     
 
 if __name__ == '__main__':
-    theta = 2 #threshold
-    inline_ratio = 0.40
+    theta = 3 #threshold
+    inline_ratio = 0.80
     n_samples = 500
     itterations = 200
     cap = cv2.VideoCapture(0)
