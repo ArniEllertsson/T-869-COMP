@@ -6,10 +6,6 @@ import random
 import math
 
 def find_line_model(points):
-    """ find a line model for the given points
-    :param points selected points for model fitting
-    :return line model
-    """
     #have to add epsilon for horizontal and vertical lines
     m = (points[1,1] - points[0,1]) / (points[1,0] - points[0,0] + sys.float_info.epsilon)  # slope (gradient) of the line
     c = points[1,1] - m * points[1,0]                                     # y-intercept of the line
@@ -17,14 +13,7 @@ def find_line_model(points):
     return m, c
 
 def find_intercept_point(m, c, testpoint):
-    """ find an intercept point of the line model with
-        a normal from point (x0,y0) to it
-    :param m slope of the line model
-    :param c y-intercept of the line model
-    :param x0 point's x coordinate
-    :param y0 point's y coordinate
-    :return intercept point
-    """
+ 
     x0,y0 = testpoint
     # intersection point with the model
     x = (x0 + m*y0 - m*c)/(1 + m**2)
@@ -36,10 +25,12 @@ def sample_count(prob, s):
     return np.log(1-prob)/(np.log(1-(1-np.power(np.exp(1)),s)))
 
 def ransac(points,iter,n_samples,threshold,inline_ratio):
+    ratio = 0.
     test_points = random.sample(points, n_samples)
     for i in range(iter):
         rng = np.random.default_rng()
         rand = rng.integers((len(points) - 2), size = 2)
+        
         line_points = np.zeros((2,2))
         line_points[0,0]= points[rand[0]][0]
         line_points[0,1]= points[rand[0]][1]
@@ -50,7 +41,6 @@ def ransac(points,iter,n_samples,threshold,inline_ratio):
         
         x_list = []
         y_list = []
-        ratio = 0.
         num = 0
  
         # find orthogonal lines to the model for all testing points
@@ -88,9 +78,9 @@ def ransac(points,iter,n_samples,threshold,inline_ratio):
 
 if __name__ == '__main__':
     theta = 2 #threshold
-    inline_ratio = 0.80
+    inline_ratio = 0.40
     n_samples = 500
-    itterations = 100
+    itterations = 200
     cap = cv2.VideoCapture(0)
     while(1):
         startT = time.perf_counter()
@@ -99,20 +89,21 @@ if __name__ == '__main__':
             print("failed to grab frame")
             break 
         
-    
-        edge = cv2.Canny(frame,100, 200)
+        edge = cv2.Canny(frame,100, 200,None,3)
         #----------------------------------
         edgePixels = edge.tolist()
         
         mylist = []
         for x,ylist in enumerate(edgePixels):
             for y,val in enumerate(ylist):
-                if val == 255:
+                if val > 0:
                     mylist.append((x,y))
         #----------------------------------
         #task 4
         if (len(mylist)+2)>n_samples:
-            p1,p2 = ransac(mylist,itterations,n_samples,theta,inline_ratio)   
+            p1,p2 = ransac(mylist,itterations,n_samples,theta,inline_ratio) 
+            p1 = tuple(reversed(p1))
+            p2 = tuple(reversed(p2))  
             cv2.line(frame,p1,p2,(255,0,0),2)   
         stopT = time.perf_counter()
         fps = 1/(stopT - startT)
